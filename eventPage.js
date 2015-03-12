@@ -5,7 +5,6 @@ function showPageAction( tabId, changeInfo, tab ) {
 	}
 };
 chrome.tabs.onUpdated.addListener(showPageAction);
-
 //function to make xmlhttprequests
 chrome.runtime.onMessage.addListener(function(request, sender, callback) { 
 	var xhr = new XMLHttpRequest();

@@ -12,7 +12,8 @@
   	}, 
 
 	"permissions": [
-		"http://www.ratemyprofessors.com/*",
+		"https://www.ratemyprofessors.com/*",
+		"https://campusconnect.depaul.edu/*",
 		"tabs"
 	],
 
@@ -27,7 +28,7 @@
 		"css": ["sheet.css"],
 		"js": ["main.js"],
 		"all_frames": true,
-		"run_at": "document_start"
+		"run_at": "document_idle"
 	 	}
 
  	 ]

@@ -1,46 +1,51 @@
 function main() {
-  
+  setInterval(hello, 10000);  
+}   //end main()
+
+function hello() {
   if (document.getElementById('ptifrmtgtframe') !== null)
   {
-  	var iframe     = document.getElementById('ptifrmtgtframe');
-  	var innerDoc   = iframe.contentDocument || iframe.contentWindow.document;
-  	var cells      = innerDoc.getElementsByClassName('PSLEVEL1GRIDNBONBO');
-  	var length     = cells.length;
-  	var professors = [];
-  	var profCount  = 0;
-  	alert("Hell!")
-  	for (var i = 0; i < length; i += 1) {
-  		var profName = innerDoc.getElementById("win0divMTG_INSTR$" + i).innerText;	
-  		
-      if (profName != 'Staff'){
-  			var div         = cells[0].childNodes[1].childNodes[2].childNodes[21];
-  			var searchName  = profName.replace(/ /g, '+');
-        alert("Hell!")
-  			var nameArray   = professors[profCount].split(' ');
-        if (nameArray.length == 1){ 
-  				searchName    = nameArray[0];
-  				div.firstName = ' ';
-  			}
-  			else if (nameArray[1].length > 1){ 
-  				searchName    = nameArray[0] + ' ' + nameArray[1];
-  			}
-  			else{ 
-  				searchName    = nameArray[0]; 
-  				div.firstName = nameArray[1];
-  			}
+    var iframe     = document.getElementById('ptifrmtgtframe');
+    var innerDoc   = iframe.contentDocument || iframe.contentWindow.document;
+    var cells      = innerDoc.getElementsByClassName('PSLEVEL1GRIDNBONBO');
+    var length     = cells.length;
+    var professors = [];
+    var profCount  = 0;
+    if(professors.length == 0)
+    { 
+      for (i = 0; i < length - 1; i++) {
+        var profName = innerDoc.getElementById("win0divMTG_INSTR$" + i).innerText;
+        if (profName != 'Staff'){
+          professors.push(profName)
+          var div         = innerDoc.createElement("BUTTON");
+          cells[i].childNodes[1].childNodes[2].childNodes[9].appendChild(div);
+          var searchName  = profName.replace(/ /g, '+');
+          var nameArray   = professors[profCount].split(' ');
+          if (nameArray.length == 1){ 
+            searchName    = nameArray[0];
+            div.firstName = ' ';
+          }
+          else if (nameArray[1].length > 1){ 
+            searchName    = nameArray[0] + ' ' + nameArray[1];
+          }
+          else{ 
+            searchName    = nameArray[0]; 
+            div.firstName = nameArray[1];
+          }
 
-  			div.searchURL = 'http://www.ratemyprofessors.com/search.jsp?queryBy=teacherName&schoolName=depaul+university&queryoption=HEADER&query='
-                      + searchName + '&facetSearch=true';
-  			div.profURL   = '';
-  			div.innerHTML = '<input class="ratingButton" type="button" value="SHOW RATING" />';
-  			div.cell      = cells[i+10];
-  			div.clicked   = false;
-  			div.addEventListener('click', openPopup);
-  			profCount++;
-  		} //end if
-  	}  //end for
+          div.searchURL = 'http://www.ratemyprofessors.com/search.jsp?queryBy=teacherName&schoolName=depaul+university&queryoption=HEADER&query='
+                        + searchName + '&facetSearch=true';
+          div.profURL   = '';
+          div.innerHTML = '<input class="ratingButton" type="button" value="SHOW RATING" />';
+          div.cell      = cells[i+10];
+          div.clicked   = false;
+          div.addEventListener('click', openPopup);
+          profCount++;
+        } //end if 
+      }  //end for
+    } // end if
   }  //end if
-}   //end main()
+}
 
 function openPopup() {
 	if (this.clicked == true) {                              //happens when button was clicked while active
