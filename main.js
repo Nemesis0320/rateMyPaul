@@ -11,7 +11,7 @@ function hello() {
     var length     = cells.length;
     var professors = [];
     var profCount  = 0;
-    if(professors.length == 0)
+    if(innerDoc.getElementsByClassName("ratingButton").length == 0)
     { 
       for (i = 0; i < length - 1; i++) {
         var profName = innerDoc.getElementById("win0divMTG_INSTR$" + i).innerText;
