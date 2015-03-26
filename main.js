@@ -44,6 +44,27 @@ function CreatePopup(result, profName) {
     });
 }
 
+function ProcessSearchResults(response, popupDelegate, professorName) {
+    //Obtain the actual link to the page
+    var searchResult = JSON.parse(response);
+
+    if (searchResult.length == 0) {
+        //We don't have any data from the web service
+        popupDelegate(searchResult, professorName);
+
+    } else {
+        var pageURL = searchResult[0].URL;
+        var professorPageURL = 'http://www.sergueifedorov.com/rmpapi/Professor?url=' + pageURL;
+
+        chrome.runtime.sendMessage({
+            method: "GET",
+            url: professorPageURL
+        }, function(result) {
+            popupDelegate(result, professorName);
+        });
+    }
+}
+
 function AugmentPage() {
     if (document.getElementById('ptifrmtgtframe') !== null)
     {
@@ -61,36 +82,19 @@ function AugmentPage() {
                 if (profName != 'Staff') {
                     $(professor).append("'<input class='ratingButton' type='button' value='SHOW RATING' />'").click(function () {
 
+                        //Having spaces in between names can create issues for HTTP GET.
+                        //format them properly
                         var searchProfString = profName.split(" ").join("%20");
 
                         //Does jQuery really not have a param/arg string?
                         var searchUrl = 'http://www.sergueifedorov.com/rmpapi/search/' + searchProfString;
-                        console.log(searchUrl);
 
                         chrome.runtime.sendMessage({
                                 method: "GET",
                                 url: searchUrl
                             },
-                            function (response) {
-
-                                //Obtain the actual link to the page
-                                var searchResult = JSON.parse(response);
-
-                                if (searchResult.length == 0) {
-                                    //We don't have any data from the web service
-                                    CreatePopup(searchResult, profName);
-                                } else {
-                                    var pageURL = searchResult[0].URL;
-
-                                    var professorPageURL = 'http://www.sergueifedorov.com/rmpapi/Professor?url=' + pageURL;
-
-                                    chrome.runtime.sendMessage({
-                                        method: "GET",
-                                        url: professorPageURL
-                                    }, function(result) {
-                                        CreatePopup(result, profName);
-                                    });
-                                }
+                            function(response) {
+                                ProcessSearchResults(response, CreatePopup, profName);
                             });
                     });
                 }
