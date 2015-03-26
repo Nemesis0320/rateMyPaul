@@ -34,6 +34,11 @@
             $(".LoadingArea").remove();
         }
 
+        //If the user keeps clicking, it will open multiple display areas on top of each other
+        if ($("body").find(".RMPDisplayArea").length != 0) {
+            $("body").find(".RMPDisplayArea").remove();
+        }
+
         //Load the template HTML file
         $.get(chrome.extension.getURL("popup.html"), function(html) {
 
@@ -105,10 +110,12 @@
                                 $("body").find(".RMPDisplayArea").remove();
                             }
 
-                            $.get(chrome.extension.getURL("loading.html"), function(html) {
-                                $("Body").append(html);
-                                $(".LoadingArea").append("<img src='" +  chrome.extension.getURL('loading.GIF') + "'/>")
-                            });
+                            if ($(".LoadingArea").length == 0) {
+                                $.get(chrome.extension.getURL("loading.html"), function(html) {
+                                    $("Body").append(html);
+                                    $(".LoadingArea").append("<img src='" + chrome.extension.getURL('loading.GIF') + "'/>")
+                                });
+                            }
 
                             chrome.runtime.sendMessage({
                                     method: "GET",
