@@ -19,14 +19,53 @@ function hello() {
                 if (profName != 'Staff') {
                     $(professor).append("'<input class='ratingButton' type='button' value='SHOW RATING' />'").click(function () {
 
-                        if ($("body").find(".RMPDisplayArea").length == 0) {
-                            //Load the template HTML file
-                            $.get(chrome.extension.getURL("popup.html"), function (html) {
-                                $("body").append(html);
+                        //Does jQuery really not have a param/arg string?
+                        var searchUrl = 'http://www.sergueifedorov.com/rmpapi/search/' + profName;
+                        console.log(searchUrl);
+
+                        chrome.runtime.sendMessage({
+                                method: "GET",
+                                url: searchUrl
+                            },
+                            function (response) {
+
+                                //Obtain the actual link to the page
+                                var searchResult = JSON.parse(response);
+                                var pageURL = searchResult[0].URL;
+
+                                var professorPageURL = 'http://www.sergueifedorov.com/rmpapi/Professor?url=' + pageURL;
+
+                                chrome.runtime.sendMessage({
+                                    method: "GET",
+                                    url: professorPageURL
+                                }, function (result) {
+
+                                    var htmlToParse = "";
+
+                                    if ($("body").find(".RMPDisplayArea").length != 0) {
+                                        $("body").find(".RMPDisplayArea").remove();
+                                    }
+
+                                    var parsedProfessor = JSON.parse(result);
+                                        //Load the template HTML file
+                                        $.get(chrome.extension.getURL("popup.html"), function(html) {
+                                            htmlToParse = html;
+
+                                            html = html.replace("__PROFESSOR_NAME__", profName);
+                                            html = html.replace("__OVERALL_QUALITY__", parsedProfessor.Grades[0].Rating);
+                                            html = html.replace("__AVERAGE_GRADE__", parsedProfessor.Grades[1].Rating);
+
+                                            html = html.replace("__HELPFULNESS__", parsedProfessor.Ratings[0].Rating);
+                                            html = html.replace("__CLARITY__", parsedProfessor.Ratings[1].Rating);
+                                            html = html.replace("__EASINESS__", parsedProfessor.Ratings[2].Rating);
+
+                                            $("body").append(html);
+                                        });
+
+                                    
+
+                                });
                             });
-                        }
-
-
                     });
                 }
             });

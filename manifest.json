@@ -14,11 +14,13 @@
 	"permissions": [
 		"https://www.ratemyprofessors.com/*",
 		"https://campusconnect.depaul.edu/*",
+		"http://www.sergueifedorov.com/rmpapi/search/",
 		"tabs"
 	],
 
 	"web_accessible_resources": [
-		"popup.html"
+		"popup.html",
+		"http://www.sergueifedorov.com/rmpapi/search/*"
 	],
 
  	"background": {
