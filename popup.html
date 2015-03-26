@@ -1,28 +1,80 @@
-<div class="RMPDisplayArea" style="width: 300px; height: 300px; background: red; bottom: 30px; right: 30px; position: absolute">
+<style>
+    .ProfessorName {
+        font-size: 25px;
+        padding: 10px;
+
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+    .RatingTitle {
+        margin-left: 10px;
+        float: left;
+        font-size: 15px;
+    }
+    .RatingContent {
+        float: right;
+       
+    }
+
+    .RMPDisplayArea {
+        background: rgb(242,245,246); /* Old browsers */
+        background: -moz-linear-gradient(top,  rgba(242,245,246,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(242,245,246,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top,  rgba(242,245,246,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top,  rgba(242,245,246,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top,  rgba(242,245,246,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+        background: linear-gradient(to bottom,  rgba(242,245,246,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f5f6', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+
+        border-radius: 5px;
+
+        padding: 5px;
+        padding-bottom: 25px;
+
+        border-color: #A6A6A6;
+        border-width: 1px;
+        border-style: solid;
+
+        -webkit-box-shadow: 9px 11px 36px -15px rgba(0,0,0,0.75);
+        -moz-box-shadow: 9px 11px 36px -15px rgba(0,0,0,0.75);
+        box-shadow: 9px 11px 36px -15px rgba(0,0,0,0.75);
+
+    }
+
+    .RatingSection {
+        border-width: 0px;
+        border-bottom-width: 2px;
+
+        border-color: #a6a6a6;
+        border-style: solid;
+    }
+</style>
+
+<div class="RMPDisplayArea" style="width: 300px; bottom: 30px; right: 30px; position: absolute">
     <div>
-        <div>__PROFESSOR_NAME__</div>
+        <div class="ProfessorName">__PROFESSOR_NAME__</div>
     </div>
-    <div>
-        <div>Professor Rating</div>
-        <div>
-            <div>Overall Quality</div>
-            <div>__OVERALL_QUALITY__</div>
+    <div style="padding-left: 25px;">
+        <div style="font-size: 20px;">Professor Ratings</div>
+        <div class="RatingSection" style="float:left; width: 250px;">
+            <div class="RatingTitle">Overall Quality</div>
+            <div class="RatingContent">__OVERALL_QUALITY__</div>
         </div>
-        <div>
-            <div>Average Grade</div>
-            <div>__AVERAGE_GRADE__</div>
+        <div class="RatingSection" style="float:left; width: 250px">
+            <div class="RatingTitle">Average Grade</div>
+            <div class="RatingContent">__AVERAGE_GRADE__</div>
         </div>
-        <div>
-            <div>Helpfulness</div>
-            <div>__HELPFULNESS__</div>
+        <div class="RatingSection" style="float:left; width: 250px">
+            <div class="RatingTitle">Helpfulness</div>
+            <div class="RatingContent">__HELPFULNESS__</div>
         </div>
-        <div>
-            <div>Clarity</div>
-            <div>__CLARITY__</div>
+        <div class="RatingSection" style="float:left; width: 250px">
+            <div class="RatingTitle">Clarity</div>
+            <div class="RatingContent">__CLARITY__</div>
         </div>
-        <div>
-            <div>Easiness</div>
-            <div>__EASINESS__</div>
+        <div class="RatingSection" style="float:left; width: 250px">
+            <div class="RatingTitle">Easiness</div>
+            <div class="RatingContent">__EASINESS__</div>
         </div>
     </div>
     <div>
