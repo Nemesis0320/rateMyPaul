@@ -1,238 +1,126 @@
-function main() {
-  setInterval(hello, 10000);  
-}   //end main()
+(function() {
 
-function hello() {
-  if (document.getElementById('ptifrmtgtframe') !== null)
-  {
-    var iframe     = document.getElementById('ptifrmtgtframe');
-    var innerDoc   = iframe.contentDocument || iframe.contentWindow.document;
-    var cells      = innerDoc.getElementsByClassName('PSLEVEL1GRIDNBONBO');
-    var length     = cells.length;
-    var professors = [];
-    var profCount  = 0;
-    if(innerDoc.getElementsByClassName("ratingButton").length == 0)
-    { 
-      for (i = 0; i < length - 1; i++) {
-        var profName = innerDoc.getElementById("win0divMTG_INSTR$" + i).innerText;
-        if (profName != 'Staff'){
-          professors.push(profName)
-          var div         = innerDoc.createElement("BUTTON");
-          cells[i].childNodes[1].childNodes[2].childNodes[9].appendChild(div);
-          var searchName  = profName.replace(/ /g, '+');
-          var nameArray   = professors[profCount].split(' ');
-          if (nameArray.length == 1){ 
-            searchName    = nameArray[0];
-            div.firstName = ' ';
-          }
-          else if (nameArray[1].length > 1){ 
-            searchName    = nameArray[0] + ' ' + nameArray[1];
-          }
-          else{ 
-            searchName    = nameArray[0]; 
-            div.firstName = nameArray[1];
-          }
+    console.log("here");
 
-          div.searchURL = 'http://www.ratemyprofessors.com/search.jsp?queryBy=teacherName&schoolName=depaul+university&queryoption=HEADER&query='
-                        + searchName + '&facetSearch=true';
-          div.profURL   = '';
-          div.innerHTML = '<input class="ratingButton" type="button" value="SHOW RATING" />';
-          div.cell      = cells[i+10];
-          div.clicked   = false;
-          div.addEventListener('click', openPopup);
-          profCount++;
-        } //end if 
-      }  //end for
-    } // end if
-  }  //end if
-}
+    main();
 
-function openPopup() {
-	if (this.clicked == true) {                              //happens when button was clicked while active
-		this.cell.innerHTML = '';
-		this.innerHTML      = '<input class="ratingButton" type="button" value="SHOW RATING" />';
-		this.clicked        = false;
-	}
-	else {                                                  //happens when button was clicked while inactive
-		this.clicked    = true;
-		this.innerHTML  = '<input class="ratingButton" type="button" value="HIDE RATING" />';
-		var iframe      = document.getElementById('ptifrmtgtframe');	
-		var innerDoc    = iframe.contentDocument || iframe.contentWindow.document;		
-		var popup       = innerDoc.createElement('div');
-		popup.className = 'popup';
-		popup.innerText = 'Loading...';
-		var firstName   = this.firstName;
-		this.cell.style.position = 'relative';
-		this.cell.appendChild(popup);
+    //Sudo-Constant Vars (no such thing as constants in JavaScript)
+    var PROFESSOR_NAME_FIELD = "__PROFESSOR_NAME__";
+    var OVERALL_QUALITY_FIELD = "__OVERALL_QUALITY__";
+    var AVERAGE_GRADE_FIELD = "__AVERAGE_GRADE__";
+    var HELPFULNESS_FIELD = "__HELPFULNESS__";
+    var CLARITY_FIELD = "__CLARITY__";
+    var EASINESS_FIELD = "__EASINESS__";
 
-		chrome.runtime.sendMessage({                          //need a separate event page to do the xmlhttprequest because of http to https issue
-    		url: this.searchURL,
-		}, function(responseText) {
-			  
-        var tmp        = innerDoc.createElement('div');  //make a temp element so that we can search through its html
-   			tmp.innerHTML  = responseText;
-   			var foundProfs = tmp.getElementsByClassName('listing PROFESSOR'); 
-   			
-   			if (foundProfs.length == 0){                     //if no results were returned, print this message
-   				var emptyPopup = popup;
-          emptyPopup.className = 'notFoundPopup';
-          var notFound         = innerDoc.createElement('div');
-          var idk              = innerDoc.createElement('div');  
-          notFound.className   = 'heading';
-          idk.className        = 'idk';
-          notFound.innerText   = "Professor not found";
-          idk.innerText        = "¯\\_(ツ)_/¯";   
-          emptyPopup.innerHTML = '';
-          emptyPopup.appendChild(notFound);
-          emptyPopup.appendChild(idk);
-   			}
-   			else{//iterate through the search results and match by first letter of first name to verify identity
-   				var length = foundProfs.length;
-   				for (var i = 0; i < length; i++){
-   					var tmp       = innerDoc.createElement('div');
-   					tmp.innerHTML = foundProfs[i].innerHTML;
-   					var name      = tmp.getElementsByClassName('main')[0].innerText;
+    function main() {
+        setInterval(AugmentPage, 3000);
+    } //end main()
 
-   					if ((firstName.charAt(0) == name.split(',')[1].charAt(1)) || (firstName == ' ')){ break;}
-   					else if (i == length-1) {
-   						var emptyPopup       = popup;
-              emptyPopup.className = 'notFoundPopup';
-              var notFound         = innerDoc.createElement('div');
-              var idk              = innerDoc.createElement('div');  
-              notFound.className   = 'heading';
-              idk.className        = 'idk';
-              notFound.innerText   = "Professor not found";
-              idk.innerText        = "¯\\_(ツ)_/¯";
-		          emptyPopup.innerHTML = '';
-        		  emptyPopup.appendChild(notFound);
-              emptyPopup.appendChild(idk);
-   						return 0;
-   					} //end else if
-   				}  //end for loop
+    function CreatePopup(result, profName) {
+        
 
-   				//get the link for the actual professor page
-   				var link     = tmp.getElementsByTagName('a');
-   				this.profURL = 'http://www.ratemyprofessors.com/' + link[0].toString().slice(23); //this is the URL
+        var parsedProfessor = [];
+        var hasData = true;
 
-   				chrome.runtime.sendMessage({ //make another xmlhttprequest using the actual professor link
-    				url: this.profURL,
-				  }, function(responseText) {
-					    tmp               = innerDoc.createElement('div');
-   					  tmp.innerHTML     = responseText;
-   					  var proffName	    = tmp.getElementsByClassName('pfname')[0].innerText;
-   					  var proflName	    = tmp.getElementsByClassName('plname')[0].innerText;
-   					  var ratingInfo    = tmp.getElementsByClassName('left-breakdown')[0];
-              var numRatings    = tmp.getElementsByClassName('table-toggle rating-count active')[0].innerText;
-   					  tmp.innerHTML     = ratingInfo.innerHTML;
+        //Not a big fan of try catches but this seems to be the only way: Serguei
+        try {
+            parsedProfessor = JSON.parse(result);
+        } catch (err) {
+            hasData = false;
+        }
 
-   					  //get the raw rating data
-   					  var overallAndAvg = tmp.getElementsByClassName('grade');
-   					  var otherRatings  = tmp.getElementsByClassName('rating');
+        //Remove the loading animation if it's showing
+        if ($(".LoadingArea").length > 0) {
+            $(".LoadingArea").remove();
+        }
 
-   					  /*
-              //handle hotness
-				      var hotness       		= overallAndAvg[2];
-   					  var isCold		  		  = /cold/.test(hotness.innerHTML);
-   					  var isWarm		 		    = /warm/.test(hotness.innerHTML); 
-   					  var hotnessFinal  		= " - ";
-   					  if(isCold || isWarm) 	{hotnessFinal = "Not hot";}
-   					  else 		    		      {hotnessFinal = "Hot";}
-              */
+        //Load the template HTML file
+        $.get(chrome.extension.getURL("popup.html"), function(html) {
 
-              var scale         = " / 5.0";
-   					  var overall       = overallAndAvg[0];
-   					  var avgGrade      = overallAndAvg[1];
-   					  var helpfulness   = otherRatings[0];
-   					  var clarity       = otherRatings[1];
-   					  var easiness      = otherRatings[2];
-   					  tmp.remove();
- 
-   					  //create the ratings divs
-   			      var profNameDiv         = innerDoc.createElement('div');
-              var overallDiv          = innerDoc.createElement('div');
-              var overallTitleDiv     = innerDoc.createElement('div');
-              var overallTextDiv      = innerDoc.createElement('div');
-              var avgGradeDiv         = innerDoc.createElement('div');
-              var avgGradeTitleDiv    = innerDoc.createElement('div');
-              var avgGradeTextDiv     = innerDoc.createElement('div');
-              var helpfulnessDiv      = innerDoc.createElement('div');
-              var helpfulnessTitleDiv = innerDoc.createElement('div');
-              var helpfulnessTextDiv  = innerDoc.createElement('div');
-              var clarityDiv          = innerDoc.createElement('div');
-              var clarityTitleDiv     = innerDoc.createElement('div');
-              var clarityTextDiv      = innerDoc.createElement('div');
-              var easinessDiv         = innerDoc.createElement('div');
-              var easinessTitleDiv    = innerDoc.createElement('div');
-              var easinessTextDiv     = innerDoc.createElement('div');
-              var numRatingsDiv       = innerDoc.createElement('div');
+            if (hasData == true) {
 
+                html = html.replace(PROFESSOR_NAME_FIELD, profName);
+                html = html.replace(OVERALL_QUALITY_FIELD, parsedProfessor.Grades[0].Rating);
+                html = html.replace(AVERAGE_GRADE_FIELD, parsedProfessor.Grades[1].Rating);
 
-              //assign class names for styling
-              profNameDiv.className         = 'heading';
-              overallDiv.className          = 'overall';
-              overallTitleDiv.className     = 'title';
-              overallTextDiv.className      = 'text';
-              avgGradeDiv.className         = 'avgGrade';
-              avgGradeTitleDiv.className    = 'title';
-              avgGradeTextDiv.className     = 'text';
-              helpfulnessDiv.className      = 'helpfulness';
-              helpfulnessTitleDiv.className = 'title';
-              helpfulnessTextDiv.className  = 'text';
-              clarityDiv.className          = 'clarity';
-              clarityTitleDiv.className     = 'title';
-              clarityTextDiv.className      = 'text';
-              easinessDiv.className         = 'easiness';
-              easinessTitleDiv.className    = 'title';
-              easinessTextDiv.className     = 'text';
-              numRatingsDiv.className       = 'numRatings';
+                html = html.replace(HELPFULNESS_FIELD, parsedProfessor.Ratings[0].Rating);
+                html = html.replace(CLARITY_FIELD, parsedProfessor.Ratings[1].Rating);
+                html = html.replace(EASINESS_FIELD, parsedProfessor.Ratings[2].Rating);
+            } else {
 
-              //put rating data in divs
-              profNameDiv.innerHTML         = '<a href="'+ this.profURL + '" target="_blank">'+ proffName + " " + proflName; + '</a>';
-              overallTitleDiv.innerText     = 'Overall Quality';
-              overallTextDiv.innerText      = overall.innerHTML.concat(scale);
-					    avgGradeTitleDiv.innerText    = 'Average Grade';
-					    avgGradeTextDiv.innerText     = avgGrade.innerHTML;
-					    helpfulnessTitleDiv.innerText = 'Helpfulness';
-					    helpfulnessTextDiv.innerText  = helpfulness.innerHTML.concat(scale);
-					    clarityTitleDiv.innerText     = 'Clarity';
-					    clarityTextDiv.innerText      = clarity.innerHTML.concat(scale);
-					    easinessTitleDiv.innerText    = 'Easiness';
-					    easinessTextDiv.innerText     = easiness.innerHTML.concat(scale);
+                var naString = "N/A";
 
-              numRatings = numRatings.slice(9).split(' ')[0] //check to see if "ratings" is singular or plural
-              if (numRatings == '1'){
-                numRatingsDiv.innerHTML     = '<a href="'+ this.profURL + '" target="_blank">'+ numRatings + ' rating</a>';
-              }
-              else{
-                numRatingsDiv.innerHTML     = '<a href="'+ this.profURL + '" target="_blank">'+ numRatings + ' ratings</a>';
-              }
+                html = html.replace(PROFESSOR_NAME_FIELD, profName);
+                html = html.replace(OVERALL_QUALITY_FIELD, naString);
+                html = html.replace(AVERAGE_GRADE_FIELD, naString);
 
-					    //add divs to popup
-					    popup.innerHTML = ''; //remove 'loading...' text
+                html = html.replace(HELPFULNESS_FIELD, naString);
+                html = html.replace(CLARITY_FIELD, naString);
+                html = html.replace(EASINESS_FIELD, naString);
+            }
+            $("body").append(html);
+        });
+    }
 
-              overallTitleDiv.appendChild(overallTextDiv);
-              overallDiv.appendChild(overallTitleDiv);          
-              avgGradeTitleDiv.appendChild(avgGradeTextDiv);
-              avgGradeDiv.appendChild(avgGradeTitleDiv);
-              helpfulnessTitleDiv.appendChild(helpfulnessTextDiv);
-              helpfulnessDiv.appendChild(helpfulnessTitleDiv);
-              clarityTitleDiv.appendChild(clarityTextDiv);
-              clarityDiv.appendChild(clarityTitleDiv);
-              easinessTitleDiv.appendChild(easinessTextDiv);
-              easinessDiv.appendChild(easinessTitleDiv);
+    function ProcessSearchResults(response, popupDelegate, professorName) {
+        //Obtain the actual link to the page
+        var searchResult = JSON.parse(response);
 
-					    popup.appendChild(profNameDiv);
-   					  popup.appendChild(overallDiv);
-   					  popup.appendChild(avgGradeDiv);
-   					  popup.appendChild(helpfulnessDiv);
-   					  popup.appendChild(clarityDiv);
-   					  popup.appendChild(easinessDiv);
-              popup.appendChild(numRatingsDiv);
+        if (searchResult.length == 0) {
+            //We don't have any data from the web service
+            popupDelegate(searchResult, professorName);
 
-				}); //end message
-			}    //end else
-		});   //end message
-	}      //end else
-}       //end openPopup()
+        } else {
+            var pageURL = searchResult[0].URL;
+            var professorPageURL = 'http://www.sergueifedorov.com/rmpapi/Professor?url=' + pageURL;
 
-main();
+            chrome.runtime.sendMessage({
+                method: "GET",
+                url: professorPageURL
+            }, function(result) {
+                popupDelegate(result, professorName);
+            });
+        }
+    }
+
+    function AugmentPage() {
+        if (document.getElementById('ptifrmtgtframe') !== null) {
+            var iframe = document.getElementById('ptifrmtgtframe');
+            var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+            //This line doesn't work for me. It's always 0 : Serguei
+            if (innerDoc.getElementsByClassName("ratingButton").length == 0) {
+                $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
+                    var profName = $(professor)[0].innerText;
+                    if (profName != 'Staff') {
+                        $(professor).append("'<input class='ratingButton' type='button' value='SHOW RATING' />'").click(function() {
+
+                            //Having spaces in between names can create issues for HTTP GET.
+                            //format them properly
+                            var searchProfString = profName.split(" ").join("%20");
+
+                            //Does jQuery really not have a param/arg string?
+                            var searchUrl = 'http://www.sergueifedorov.com/rmpapi/search/' + searchProfString;
+
+                            if ($("body").find(".RMPDisplayArea").length != 0) {
+                                $("body").find(".RMPDisplayArea").remove();
+                            }
+
+                            $.get(chrome.extension.getURL("loading.html"), function(html) {
+                                $("Body").append(html);
+                                $(".LoadingArea").append("<img src='" +  chrome.extension.getURL('loading.GIF') + "'/>")
+                            });
+
+                            chrome.runtime.sendMessage({
+                                    method: "GET",
+                                    url: searchUrl
+                                },
+                                function(response) {
+                                    ProcessSearchResults(response, CreatePopup, profName);
+                                });
+                        });
+                    }
+                });
+            }
+        }
+    }
+})();
