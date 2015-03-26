@@ -20,7 +20,10 @@
 
 	"web_accessible_resources": [
 		"popup.html",
+		"loading.html",
+		"loading.GIF",
 		"http://www.sergueifedorov.com/rmpapi/search/*"
+
 	],
 
  	"background": {
