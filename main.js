@@ -21,12 +21,6 @@
         }
     }
 
-    function ClosePopup() {
-        if ($(".RMPDisplayArea").length > 0) {
-            $(".RMPDisplayArea").remove();
-        }
-    }
-
     function CreateLoadingArea() {
         if ($(".LoadingArea").length == 0) {
             $.get(chrome.extension.getURL("loading.html"), function (html) {
@@ -36,10 +30,19 @@
         }
     }
 
+    
+    function ClosePopup() {
+        if (PopupIsOpen()) {
+            $(".RMPDisplayArea").remove();
+        }
+    }
+
+    function PopupIsOpen() {
+        return $(".RMPDisplayArea").length > 0;
+    }
+
     function CreatePopup(result, profName, pageUrl) {
         
-
-
         var parsedProfessor = null;
         var hasData = true;
 
@@ -116,11 +119,35 @@
         if (document.getElementById('ptifrmtgtframe') !== null) {
             var iframe = document.getElementById('ptifrmtgtframe');
             var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            if (PopupIsOpen()) {
+
+                var professorName = $(".ProfessorName")[0].innerText;
+                //console.log(professorName);
+
+                var popUpNeedsToBeClosed = true;
+                $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
+
+                    var compareToProfessor = $(professor)[0].innerText;
+                    compareToProfessor = compareToProfessor.replace(/'/g, "");
+
+                    if (professorName === compareToProfessor) {
+                        popUpNeedsToBeClosed = false; //"Break"
+                        return false;
+                    }
+                });
+
+                if (popUpNeedsToBeClosed) {
+                    ClosePopup();
+                }
+            }
+
             //This line doesn't work for me. It's always 0 : Serguei
             if (innerDoc.getElementsByClassName("ratingButton").length == 0) {
                 $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
                     var profName = $(professor)[0].innerText;
                     if (profName != 'Staff') {
+
                         $(professor).append("'<input class='ratingButton' type='button' value='SHOW RATING' />'").click(function() {
 
                             //Having spaces in between names can create issues for HTTP GET.
