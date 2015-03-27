@@ -120,11 +120,10 @@
             var iframe = document.getElementById('ptifrmtgtframe');
             var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
 
+            //Close out the popup if the professor's name is no longer there (the search has been updated or you nagivated somewhere else)
             if (PopupIsOpen()) {
 
                 var professorName = $(".ProfessorName")[0].innerText;
-                //console.log(professorName);
-
                 var popUpNeedsToBeClosed = true;
                 $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
 
