@@ -51,8 +51,11 @@
 </style>
 
 <div class="RMPDisplayArea" style="width: 300px; bottom: 30px; right: 30px; position: absolute">
+    <div style="height: 10px; float: right;">
+        <img id="CloseButton" width="25px" src="__CLOSE_BUTTON__"/>
+    </div>
     <div>
-        <div class="ProfessorName">__PROFESSOR_NAME__</div>
+        <div class="ProfessorName" ><a target="_blank" href="__LINK_TO_PROFESSOR_PAGE__">__PROFESSOR_NAME__</a></div>
     </div>
     <div style="padding-left: 25px;">
         <div style="font-size: 20px;">Professor Ratings</div>
@@ -81,3 +84,11 @@
         <div></div>
     </div>
 </div>
+
+<script>
+    $("#CloseButton").click(function () {
+        console.log("here");
+
+        $(".RMPDisplayArea").remove();
+    })
+</script>

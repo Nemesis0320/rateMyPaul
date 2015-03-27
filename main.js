@@ -16,7 +16,7 @@
         setInterval(AugmentPage, 3000);
     } //end main()
 
-    function CreatePopup(result, profName) {
+    function CreatePopup(result, profName, pageUrl) {
         
 
         var parsedProfessor = [];
@@ -42,6 +42,8 @@
         //Load the template HTML file
         $.get(chrome.extension.getURL("popup.html"), function(html) {
 
+            html = html.replace("__CLOSE_BUTTON__", chrome.extension.getURL('close.png'));
+
             if (hasData == true) {
 
                 html = html.replace(PROFESSOR_NAME_FIELD, profName);
@@ -51,6 +53,9 @@
                 html = html.replace(HELPFULNESS_FIELD, parsedProfessor.Ratings[0].Rating);
                 html = html.replace(CLARITY_FIELD, parsedProfessor.Ratings[1].Rating);
                 html = html.replace(EASINESS_FIELD, parsedProfessor.Ratings[2].Rating);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "http://www.ratemyprofessors.com" + pageUrl);
+
             } else {
 
                 var naString = "N/A";
@@ -62,6 +67,8 @@
                 html = html.replace(HELPFULNESS_FIELD, naString);
                 html = html.replace(CLARITY_FIELD, naString);
                 html = html.replace(EASINESS_FIELD, naString);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "");
             }
             $("body").append(html);
         });
@@ -83,7 +90,7 @@
                 method: "GET",
                 url: professorPageURL
             }, function(result) {
-                popupDelegate(result, professorName);
+                popupDelegate(result, professorName, pageURL);
             });
         }
     }
