@@ -1,7 +1,6 @@
 (function() {
 
-    console.log("here");
-
+    //Entry point
     main();
 
     //Sudo-Constant Vars (no such thing as constants in JavaScript)
@@ -14,15 +13,36 @@
 
     function main() {
         setInterval(AugmentPage, 3000);
-    } //end main()
+    } //end main();
 
-    function CreatePopup(result, profName) {
+    function CloseLoadingArea() {
+        if ($(".LoadingArea").length > 0) {
+            $(".LoadingArea").remove();
+        }
+    }
+
+    function ClosePopup() {
+        if ($(".RMPDisplayArea").length > 0) {
+            $(".RMPDisplayArea").remove();
+        }
+    }
+
+    function CreateLoadingArea() {
+        if ($(".LoadingArea").length == 0) {
+            $.get(chrome.extension.getURL("loading.html"), function (html) {
+                $("Body").append(html);
+                $(".LoadingArea").append("<img src='" + chrome.extension.getURL('loading.GIF') + "'/>")
+            });
+        }
+    }
+
+    function CreatePopup(result, profName, pageUrl) {
         
 
-        var parsedProfessor = [];
+
+        var parsedProfessor = null;
         var hasData = true;
 
-        //Not a big fan of try catches but this seems to be the only way: Serguei
         try {
             parsedProfessor = JSON.parse(result);
         } catch (err) {
@@ -30,17 +50,16 @@
         }
 
         //Remove the loading animation if it's showing
-        if ($(".LoadingArea").length > 0) {
-            $(".LoadingArea").remove();
-        }
+        ClosePopup();
 
         //If the user keeps clicking, it will open multiple display areas on top of each other
-        if ($("body").find(".RMPDisplayArea").length != 0) {
-            $("body").find(".RMPDisplayArea").remove();
-        }
+        CloseLoadingArea();
 
         //Load the template HTML file
         $.get(chrome.extension.getURL("popup.html"), function(html) {
+
+            html = html.replace("__CLOSE_BUTTON__", chrome.extension.getURL('close.png'));
+            html = html.replace("__LINK_ICON__", chrome.extension.getURL('link.png'));
 
             if (hasData == true) {
 
@@ -51,6 +70,9 @@
                 html = html.replace(HELPFULNESS_FIELD, parsedProfessor.Ratings[0].Rating);
                 html = html.replace(CLARITY_FIELD, parsedProfessor.Ratings[1].Rating);
                 html = html.replace(EASINESS_FIELD, parsedProfessor.Ratings[2].Rating);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "http://www.ratemyprofessors.com" + pageUrl);
+
             } else {
 
                 var naString = "N/A";
@@ -62,6 +84,8 @@
                 html = html.replace(HELPFULNESS_FIELD, naString);
                 html = html.replace(CLARITY_FIELD, naString);
                 html = html.replace(EASINESS_FIELD, naString);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "");
             }
             $("body").append(html);
         });
@@ -73,7 +97,7 @@
 
         if (searchResult.length == 0) {
             //We don't have any data from the web service
-            popupDelegate(searchResult, professorName);
+            popupDelegate(searchResult, professorName, "");
 
         } else {
             var pageURL = searchResult[0].URL;
@@ -83,7 +107,7 @@
                 method: "GET",
                 url: professorPageURL
             }, function(result) {
-                popupDelegate(result, professorName);
+                popupDelegate(result, professorName, pageURL);
             });
         }
     }
@@ -106,16 +130,9 @@
                             //Does jQuery really not have a param/arg string?
                             var searchUrl = 'http://www.sergueifedorov.com/rmpapi/search/' + searchProfString;
 
-                            if ($("body").find(".RMPDisplayArea").length != 0) {
-                                $("body").find(".RMPDisplayArea").remove();
-                            }
-
-                            if ($(".LoadingArea").length == 0) {
-                                $.get(chrome.extension.getURL("loading.html"), function(html) {
-                                    $("Body").append(html);
-                                    $(".LoadingArea").append("<img src='" + chrome.extension.getURL('loading.GIF') + "'/>")
-                                });
-                            }
+                            ClosePopup();
+                            CreateLoadingArea();
+                            
 
                             chrome.runtime.sendMessage({
                                     method: "GET",
