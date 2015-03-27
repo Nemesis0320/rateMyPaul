@@ -1,7 +1,5 @@
 (function() {
 
-    console.log("here");
-
     main();
 
     //Sudo-Constant Vars (no such thing as constants in JavaScript)
