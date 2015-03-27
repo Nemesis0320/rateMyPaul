@@ -3,6 +3,7 @@
  	"name": "RateMyPaul",
  	"version": "1.0",
  	"author": "Ozer Chagatai",
+ 	"author": "Serguei Fedorov",
  	"description": "Choose your DePaul courses more efficiently with ratings from RateMyProfessors.com.", 
 
  	"icons": { "16": "icon.png", "48": "icon.png", "128": "icon.png" }, 
