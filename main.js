@@ -10,10 +10,13 @@
     var HELPFULNESS_FIELD = "__HELPFULNESS__";
     var CLARITY_FIELD = "__CLARITY__";
     var EASINESS_FIELD = "__EASINESS__";
+    var LINK_TO_PROFESSOR_PAGE = "__LINK_TO_PROFESSOR_PAGE__";
+    var CLOSE_BUTTON = "__CLOSE_BUTTON__";
+    var LINK_ICON = "__LINK_ICON__";
 
     function main() {
         setInterval(AugmentPage, 3000);
-    } //end main();
+    }
 
     function CloseLoadingArea() {
         if ($(".LoadingArea").length > 0) {
@@ -41,6 +44,22 @@
         return $(".RMPDisplayArea").length > 0;
     }
 
+    function ProfessorNameStillOnPage(professorName, documentToSearch)
+    {
+        var professorFound = false;
+        $.each(documentToSearch.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
+            var compareToProfessor = $(professor)[0].innerText;
+            compareToProfessor = compareToProfessor.replace(/'/g, "");
+
+            if (professorName === compareToProfessor) {
+                professorFound = true;
+                return false; //Returns out of the the each loop
+            }
+        });
+
+        return professorFound;
+    }
+
     function CreatePopup(result, profName, pageUrl) {
         
         var parsedProfessor = null;
@@ -61,8 +80,8 @@
         //Load the template HTML file
         $.get(chrome.extension.getURL("popup.html"), function(html) {
 
-            html = html.replace("__CLOSE_BUTTON__", chrome.extension.getURL('close.png'));
-            html = html.replace("__LINK_ICON__", chrome.extension.getURL('link.png'));
+            html = html.replace(CLOSE_BUTTON, chrome.extension.getURL('close.png'));
+            html = html.replace(LINK_ICON, chrome.extension.getURL('link.png'));
 
             if (hasData == true) {
 
@@ -74,7 +93,7 @@
                 html = html.replace(CLARITY_FIELD, parsedProfessor.Ratings[1].Rating);
                 html = html.replace(EASINESS_FIELD, parsedProfessor.Ratings[2].Rating);
 
-                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "http://www.ratemyprofessors.com" + pageUrl);
+                html = html.replace(LINK_TO_PROFESSOR_PAGE, "http://www.ratemyprofessors.com" + pageUrl);
 
             } else {
 
@@ -88,7 +107,7 @@
                 html = html.replace(CLARITY_FIELD, naString);
                 html = html.replace(EASINESS_FIELD, naString);
 
-                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "");
+                html = html.replace(LINK_TO_PROFESSOR_PAGE, "");
             }
             $("body").append(html);
         });
@@ -117,26 +136,14 @@
 
     function AugmentPage() {
         if (document.getElementById('ptifrmtgtframe') !== null) {
+
             var iframe = document.getElementById('ptifrmtgtframe');
             var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
 
             //Close out the popup if the professor's name is no longer there (the search has been updated or you nagivated somewhere else)
             if (PopupIsOpen()) {
-
-                var professorName = $(".ProfessorName")[0].innerText;
-                var popUpNeedsToBeClosed = true;
-                $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
-
-                    var compareToProfessor = $(professor)[0].innerText;
-                    compareToProfessor = compareToProfessor.replace(/'/g, "");
-
-                    if (professorName === compareToProfessor) {
-                        popUpNeedsToBeClosed = false; //"Break"
-                        return false;
-                    }
-                });
-
-                if (popUpNeedsToBeClosed) {
+                if (ProfessorNameStillOnPage($(".ProfessorName")[0].innerText, innerDoc) == false)
+                {
                     ClosePopup();
                 }
             }
