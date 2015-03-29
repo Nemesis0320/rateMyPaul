@@ -21,8 +21,6 @@ function PopupIsOpen() {
 
  function CreatePopup(result, profName, pageUrl) {
         
- 		console.log("opening")
-
 	    //Sudo-Constant Vars (no such thing as constants in JavaScript)
 	    var PROFESSOR_NAME_FIELD = /__PROFESSOR_NAME__/g;
 	    var OVERALL_QUALITY_FIELD = /__OVERALL_QUALITY__/g;
@@ -79,7 +77,7 @@ function PopupIsOpen() {
                 html = html.replace(CLARITY_FIELD, naString);
                 html = html.replace(EASINESS_FIELD, naString);
 
-                html = html.replace(LINK_TO_PROFESSOR_PAGE, "");
+                html = html.replace(LINK_TO_PROFESSOR_PAGE, "http://www.ratemyprofessors.com/search.jsp?queryoption=HEADER&queryBy=teacherName&query=" + profName);
             }
             $("body").append(html);
         });
