@@ -1,7 +1,6 @@
 (function() {
 
-    console.log("here");
-
+    //Entry point
     main();
 
     //Sudo-Constant Vars (no such thing as constants in JavaScript)
@@ -14,15 +13,39 @@
 
     function main() {
         setInterval(AugmentPage, 3000);
-    } //end main()
+    } //end main();
 
-    function CreatePopup(result, profName) {
+    function CloseLoadingArea() {
+        if ($(".LoadingArea").length > 0) {
+            $(".LoadingArea").remove();
+        }
+    }
+
+    function CreateLoadingArea() {
+        if ($(".LoadingArea").length == 0) {
+            $.get(chrome.extension.getURL("loading.html"), function (html) {
+                $("Body").append(html);
+                $(".LoadingArea").append("<img src='" + chrome.extension.getURL('loading.GIF') + "'/>")
+            });
+        }
+    }
+
+    
+    function ClosePopup() {
+        if (PopupIsOpen()) {
+            $(".RMPDisplayArea").remove();
+        }
+    }
+
+    function PopupIsOpen() {
+        return $(".RMPDisplayArea").length > 0;
+    }
+
+    function CreatePopup(result, profName, pageUrl) {
         
-
-        var parsedProfessor = [];
+        var parsedProfessor = null;
         var hasData = true;
 
-        //Not a big fan of try catches but this seems to be the only way: Serguei
         try {
             parsedProfessor = JSON.parse(result);
         } catch (err) {
@@ -30,12 +53,16 @@
         }
 
         //Remove the loading animation if it's showing
-        if ($(".LoadingArea").length > 0) {
-            $(".LoadingArea").remove();
-        }
+        ClosePopup();
+
+        //If the user keeps clicking, it will open multiple display areas on top of each other
+        CloseLoadingArea();
 
         //Load the template HTML file
         $.get(chrome.extension.getURL("popup.html"), function(html) {
+
+            html = html.replace("__CLOSE_BUTTON__", chrome.extension.getURL('close.png'));
+            html = html.replace("__LINK_ICON__", chrome.extension.getURL('link.png'));
 
             if (hasData == true) {
 
@@ -46,6 +73,9 @@
                 html = html.replace(HELPFULNESS_FIELD, parsedProfessor.Ratings[0].Rating);
                 html = html.replace(CLARITY_FIELD, parsedProfessor.Ratings[1].Rating);
                 html = html.replace(EASINESS_FIELD, parsedProfessor.Ratings[2].Rating);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "http://www.ratemyprofessors.com" + pageUrl);
+
             } else {
 
                 var naString = "N/A";
@@ -57,6 +87,8 @@
                 html = html.replace(HELPFULNESS_FIELD, naString);
                 html = html.replace(CLARITY_FIELD, naString);
                 html = html.replace(EASINESS_FIELD, naString);
+
+                html = html.replace("__LINK_TO_PROFESSOR_PAGE__", "");
             }
             $("body").append(html);
         });
@@ -68,7 +100,7 @@
 
         if (searchResult.length == 0) {
             //We don't have any data from the web service
-            popupDelegate(searchResult, professorName);
+            popupDelegate(searchResult, professorName, "");
 
         } else {
             var pageURL = searchResult[0].URL;
@@ -78,7 +110,7 @@
                 method: "GET",
                 url: professorPageURL
             }, function(result) {
-                popupDelegate(result, professorName);
+                popupDelegate(result, professorName, pageURL);
             });
         }
     }
@@ -87,11 +119,35 @@
         if (document.getElementById('ptifrmtgtframe') !== null) {
             var iframe = document.getElementById('ptifrmtgtframe');
             var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            if (PopupIsOpen()) {
+
+                var professorName = $(".ProfessorName")[0].innerText;
+                //console.log(professorName);
+
+                var popUpNeedsToBeClosed = true;
+                $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
+
+                    var compareToProfessor = $(professor)[0].innerText;
+                    compareToProfessor = compareToProfessor.replace(/'/g, "");
+
+                    if (professorName === compareToProfessor) {
+                        popUpNeedsToBeClosed = false; //"Break"
+                        return false;
+                    }
+                });
+
+                if (popUpNeedsToBeClosed) {
+                    ClosePopup();
+                }
+            }
+
             //This line doesn't work for me. It's always 0 : Serguei
             if (innerDoc.getElementsByClassName("ratingButton").length == 0) {
                 $.each(innerDoc.querySelectorAll("span[id ^= 'MTG_INSTR']"), function(index, professor) {
                     var profName = $(professor)[0].innerText;
                     if (profName != 'Staff') {
+
                         $(professor).append("'<input class='ratingButton' type='button' value='SHOW RATING' />'").click(function() {
 
                             //Having spaces in between names can create issues for HTTP GET.
@@ -101,14 +157,9 @@
                             //Does jQuery really not have a param/arg string?
                             var searchUrl = 'http://www.sergueifedorov.com/rmpapi/search/' + searchProfString;
 
-                            if ($("body").find(".RMPDisplayArea").length != 0) {
-                                $("body").find(".RMPDisplayArea").remove();
-                            }
-
-                            $.get(chrome.extension.getURL("loading.html"), function(html) {
-                                $("Body").append(html);
-                                $(".LoadingArea").append("<img src='" +  chrome.extension.getURL('loading.GIF') + "'/>")
-                            });
+                            ClosePopup();
+                            CreateLoadingArea();
+                            
 
                             chrome.runtime.sendMessage({
                                     method: "GET",
