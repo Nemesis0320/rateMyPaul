@@ -15,8 +15,7 @@
 	"permissions": [
 		"https://www.ratemyprofessors.com/*",
 		"https://campusconnect.depaul.edu/*",
-		"http://www.sergueifedorov.com/rmpapi/search/",
-		"tabs"
+		"http://www.sergueifedorov.com/rmpapi/search/"
 	],
 
 	"web_accessible_resources": [
